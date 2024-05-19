@@ -12,5 +12,5 @@ function I_r_IE = jointToPosition(q)
   T_IE=getTransformI0()*T_06*getTransform6E();
   
   % PLACEHOLDER FOR OUTPUT -> REPLACE WITH SOLUTION
-  I_r_IE = T_IE(end,1:3);
+  I_r_IE = T_IE(1:3,end);
 end
