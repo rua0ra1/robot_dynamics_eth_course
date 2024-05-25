@@ -30,48 +30,29 @@ eom.hamiltonian = sym(zeros(1,1));
 %% Compute mass matrix
 fprintf('Computing mass matrix M... ');
 % TODO: Implement M = ...;
-pr1 = 0;
-R_Ik_inv = cell(6,1);
-for k = 1:6
-    R_Ik_inv{k} = inv(R_Ik{k});
-    pr1 = pr1+m{k}*(I_Jp_s{k}')*I_Jp_s{k};
+part1=zeros(6,6);
+part2=zeros(6,6);
+for i =1:numel(phi)
+
+    part1=part1+(I_Jp_s{i}'*(m{i}*I_Jp_s{i}));
+    b_Jr_I= (R_Ik{i})'*I_Jr{i};
+    part2=part2+((b_Jr_I')*(k_I_s{i}*b_Jr_I));
 end
 
-pr2 = 0;
-for k = 1:6
-   pr2 = pr2+(R_Ik_inv{k}*(I_Jr{k}))'*k_I_s{k}*(R_Ik_inv{k}*I_Jr{k});
-end
-M = pr1+pr2;
+M=part1+part2;
 fprintf('done!\n');
 
 %% Compute gravity terms
 fprintf('Computing gravity vector g... ');
-% TODO: Implement g = ...;
-g = 0;
-for k = 1:6
-   g = g - (I_Jp_s{k}')*(m{k}.*I_g_acc);
-end
-fprintf('done!\n');
 
 
+g=zeros(6,1)
 %% Compute nonlinear terms vector
 fprintf('Computing coriolis and centrifugal vector b and simplifying... ');
 % TODO: Implement b = ...;
-I_Jp_s_drv = cell(6,1);
-I_Jr_drv = cell(6,1);
 
-comp1 = 0;
-comp2 = 0;
-comp3 = 0;
-for k = 1:6
-I_Jp_s_drv{k} = dAdt( I_Jp_s{k}, phi, dphi );
-I_Jr_drv{k} = dAdt( I_Jr{k}, phi, dphi );
-comp1 = comp1+m{k}*(I_Jp_s{k}')*I_Jp_s_drv{k}*dphi;
-comp2 = comp2+(R_Ik_inv{k}*(I_Jr{k}))'*(R_Ik_inv{k}*k_I_s{k})*(R_Ik_inv{k}*I_Jr_drv{k})*dphi;
-comp3 = comp3+(R_Ik_inv{k}*(I_Jr{k}))'*cross((R_Ik_inv{k}*I_Jr{k}*dphi),(R_Ik_inv{k}*k_I_s{k})*(R_Ik_inv{k}*I_Jr{k}*dphi));
-end
+b=zeros(6,1)
 
-b = comp1+comp2+comp3;
 fprintf('done!\n');
 
 
@@ -79,15 +60,7 @@ fprintf('done!\n');
 %% Compute energy
 fprintf('Computing total energy... ');
 % TODO: Implement hamiltonian, enPot, enKin = ...;
-k_r_Is = cell(6,1);
-enPot = 0;
-for k = 1:6
-    k_r_Is{k} = R_Ik{k}*k_r_ks{k};
-    enPot = enPot-(k_r_Is{k}')*(m{k}.*I_g_acc);
-end
-
-enKin = 0.5*(dphi')*M*dphi;
-hamiltonian = enPot+enKin;
+hamiltonian = zeros(1,1);
 fprintf('done!\n');
 
 
