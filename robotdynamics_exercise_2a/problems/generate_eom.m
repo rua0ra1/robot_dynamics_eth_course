@@ -45,8 +45,14 @@ fprintf('done!\n');
 %% Compute gravity terms
 fprintf('Computing gravity vector g... ');
 
+g_dummy=zeros(6,1);
+for i =1:numel(phi)
 
-g=zeros(6,1)
+    g_dummy=g_dummy+(I_Jp_s{i}'*(m{i}*I_g_acc));
+end
+
+
+g=-g_dummy;
 %% Compute nonlinear terms vector
 fprintf('Computing coriolis and centrifugal vector b and simplifying... ');
 % TODO: Implement b = ...;
