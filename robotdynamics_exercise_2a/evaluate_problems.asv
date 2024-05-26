@@ -41,6 +41,9 @@ for funcell = {'b_fun', 'hamiltonian_fun'}
         qd = randn(6,1);
         user_output = feval(fun, q, qd);
         solution = feval([fun, '_solution'], q, qd);
+        disp(['user_output',num2str(user_output)]);
+        disp(['solution',num2str(solution)]);
+        
         if almostequal(user_output, solution)
             correct = correct + 1;
         end
@@ -55,6 +58,26 @@ end
 fprintf('... Done \n')
 
 
+
+fun = funcell{1};
+    correct = 0;
+    for i = 1:N
+        q = randn(6,1);
+        qd = randn(6,1);
+        user_output = feval(fun, q, qd);
+        solution = feval([fun, '_solution'], q, qd);
+        disp(['user_output',num2str(user_output)]);
+        disp(['solution',num2str(solution)]);
+        
+        if almostequal(user_output, solution)
+            correct = correct + 1;
+        end
+    end
+    if correct == N
+        disp_correct(fun);
+    else
+        disp_incorrect(fun);
+    end
 
 
 

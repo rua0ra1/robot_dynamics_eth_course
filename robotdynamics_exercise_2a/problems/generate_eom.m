@@ -93,7 +93,25 @@ fprintf('done!\n');
 %% Compute energy
 fprintf('Computing total energy... ');
 % TODO: Implement hamiltonian, enPot, enKin = ...;
-hamiltonian = zeros(1,1);
+ke=0.5*(dphi')*(M)*(dphi);
+enPot=sym(0);
+for i =1:numel(phi)
+   i_r_ks=[eye(3) zeros(3,1)]*(T_Ik{i}*[k_r_ks{i};1]);
+
+    enPot=enPot-(m{i}*(I_g_acc'*i_r_ks));
+end
+
+% enPot = sym(0);
+% for k=1:length(phi)
+%     enPot = enPot - m{k}*I_g_acc'*[eye(3) zeros(3,1)]*T_Ik{k}*[k_r_ks{k};1];
+% end
+
+
+%enPot=-pe_sum;
+enKin=ke;
+
+hamiltonian = simplify(enKin+enPot);
+
 fprintf('done!\n');
 
 

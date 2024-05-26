@@ -66,21 +66,24 @@ b_sum=zeros(6,1);
 for i =1:numel(phi)
 
     %calculate first part of the b equation
-    I_dJp_s=dAdt(I_Jp_s{i},q,dq);
+    I_dJp_s=dAdt(I_Jp_s{i},phi,dphi);
     b1=(I_Jp_s{i}')*(m{i}*I_dJp_s*dphi);
 
     %calculate the second part of the b equation
     b_Jr_i= (R_Ik{i})'*I_Jr{i};
-    b_dJr_i=dAdt(b_Jr_i,q,dq);
+    b_dJr_i=dAdt(b_Jr_i,phi,dphi);
 
     b_omega_i=b_Jr_i*dphi;
 
-    dummy=cross()
+    dummy1=cross(b_omega_i,(k_I_s{i}*b_omega_i));
+    dummy2=(k_I_s{i}*b_dJr_i*dphi)+dummy1;
 
+    b2=b_Jr_i'*dummy2;
 
-
-    b_sum=b_sum
+    b_sum=b_sum+b1+b2;
 end
+
+b=b_sum;
 
 
 fprintf('done!\n');
@@ -90,7 +93,15 @@ fprintf('done!\n');
 %% Compute energy
 fprintf('Computing total energy... ');
 % TODO: Implement hamiltonian, enPot, enKin = ...;
-hamiltonian = zeros(1,1);
+ke=0.5*(dphi')*(M)*(dphi);
+pe_sum=0;
+for i =1:numel(phi)
+    pe_sum=pe_sum+(R_Ik{i}*k_r_ks{i})'*(m{i}*I_g_acc);
+end
+pe_sum=-pe_sum;
+
+hamiltonian = ke+pe_sum;
+enPot=pe
 fprintf('done!\n');
 
 
