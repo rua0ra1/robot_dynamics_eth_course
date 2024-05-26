@@ -21,6 +21,12 @@ k_r_ks = dyn.k_r_ks;    % CoM location of body k in frame k (6x1 cell)->(3x1 dou
 I_Jp_s = jac.I_Jp_s;    % CoM Positional Jacobian in frame I (6x1 cell)->(3x6 sym)
 I_Jr = jac.I_Jr;        % CoM Rotational Jacobian in frame I (6x1 cell)->(3x6 sym)
 
+I_Jpe=jac.I_Jpe ;
+I_Jre=jac.I_Jre ;
+
+I_dJpe=jac.I_dJpe;
+I_dJre=jac.I_dJre;
+
 eom.M = sym(zeros(6,6));
 eom.g = sym(zeros(6,1));
 eom.b = sym(zeros(6,1));
@@ -35,8 +41,8 @@ part2=zeros(6,6);
 for i =1:numel(phi)
 
     part1=part1+(I_Jp_s{i}'*(m{i}*I_Jp_s{i}));
-    b_Jr_I= (R_Ik{i})'*I_Jr{i};
-    part2=part2+((b_Jr_I')*(k_I_s{i}*b_Jr_I));
+    b_Jr_i= (R_Ik{i})'*I_Jr{i};
+    part2=part2+((b_Jr_i')*(k_I_s{i}*b_Jr_i));
 end
 
 M=part1+part2;
@@ -45,19 +51,40 @@ fprintf('done!\n');
 %% Compute gravity terms
 fprintf('Computing gravity vector g... ');
 
-g_dummy=zeros(6,1);
+g_sum=zeros(6,1);
 for i =1:numel(phi)
 
-    g_dummy=g_dummy+(I_Jp_s{i}'*(m{i}*I_g_acc));
+    g_sum=g_sum+(I_Jp_s{i}'*(m{i}*I_g_acc));
 end
 
-
-g=-g_dummy;
+g=-g_sum;
 %% Compute nonlinear terms vector
 fprintf('Computing coriolis and centrifugal vector b and simplifying... ');
 % TODO: Implement b = ...;
 
-b=zeros(6,1)
+b_sum=zeros(6,1);
+for i =1:numel(phi)
+
+    %calculate first part of the b equation
+    I_dJp_s=dAdt(I_Jp_s{i},phi,dphi);
+    b1=(I_Jp_s{i}')*(m{i}*I_dJp_s*dphi);
+
+    %calculate the second part of the b equation
+    b_Jr_i= (R_Ik{i})'*I_Jr{i};
+    b_dJr_i=dAdt(b_Jr_i,phi,dphi);
+
+    b_omega_i=b_Jr_i*dphi;
+
+    dummy1=cross(b_omega_i,(k_I_s{i}*b_omega_i));
+    dummy2=(k_I_s{i}*b_dJr_i*dphi)+dummy1;
+
+    b2=b_Jr_i'*dummy2;
+
+    b_sum=b_sum+b1+b2;
+end
+
+b=b_sum;
+
 
 fprintf('done!\n');
 
