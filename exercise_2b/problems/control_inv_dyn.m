@@ -32,11 +32,10 @@ chi_err = [I_r_IE_des - I_r_Ie;
 
 % PD law, the orientation feedback is a torque around error rotation axis
 % proportional to the error angle.
-w_dot = kp*chi_err+kd*ones(6,1);%desired w_star and w ???
-
-lamda = inv(I_J_e/eom.m*I_J_e');
-mue = lamda*I_J_e/eom.m*eom.b - lamda*I_dJ_e*q_dot;
-p = lamda*I_J_e/eom.m*eom.g; 
+% to calculate the end effector velocity we can use the joint velocity
+end_effector_vel= I_J_e*q_dot;
 %tau = zeros(6, 1); % TODO
-tau = I_J_e'*(lamda*w_dot+mue+p);
+
+tau=kp*(chi_err)+kd*(-end_effector_vel)+g_fun_solution(q);
+
 end
