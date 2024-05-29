@@ -36,6 +36,19 @@ chi_err = [I_r_IE_des - I_r_Ie;
 end_effector_vel= I_J_e*q_dot;
 %tau = zeros(6, 1); % TODO
 
-tau=kp*(chi_err)+kd*(-end_effector_vel)+g_fun_solution(q);
+% we should use inverse dynamics M(q)ddq+b(q,dq)+g(q)
+b=b_fun_solution(q,q_dot);
+g=g_fun_solution(q);
+M=M_fun_solution(q);
+
+% calculating the acceleration of the end effector we
+end_effector_ref=zeros(6,1);
+d_we=kp*(chi_err)+kd*( end_effector_ref-end_effector_vel)
+
+%convert d_we to q_dot_dot
+% q_dot_dot can be calculated by using  q_dot_dot= J^-1*(we*-dJ * dq)
+q_dot_dot=pinv(I_J_e)(d_we-(I_dJ_e*q_dot));
+
+tau=(M*q_dot_dot)+b+g;
 
 end
