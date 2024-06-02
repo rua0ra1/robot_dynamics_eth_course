@@ -20,77 +20,80 @@ function [ tau ] = floating_base_control(model, t, x)
 
 % Extract generalized positions and velocities
 q = x(1:10);    % [10x1] Generalized coordinates [q_b, q_F, q_H, q_A]'
-qd = x(11:20);  % [10X1] Generalized velocities
+dq = x(11:20);  % [10X1] Generalized velocities
 
 %% Model Parameters 
 
 % Extract dynamics at current state
 params = model.parameters.values;
-M = model.dynamics.compute.M(q,qd,[],[],params); % [10X10] Inertia matrix
-b = model.dynamics.compute.b(q,qd,[],[],params); % [10X1] Nonlinear-dynamics vector
-g = model.dynamics.compute.g(q,qd,[],[],params); % [10X1] Gravity vector
-S = [zeros(7, 3), eye(7)];                       % [10X7] Selection matrix
+M = model.dynamics.compute.M(q,dq,[],[],params); % [10X10] Inertia matrix
+b = model.dynamics.compute.b(q,dq,[],[],params); % [10X1] Nonlinear-dynamics vector
+g = model.dynamics.compute.g(q,dq,[],[],params); % [10X1] Gravity vector
+S = [zeros(7, 3), eye(7)];                       % [7x10] Selection matrix
 
 % Get Jacobians and Derivatives at current state
-I_J_b  = eval_jac(model.body( 1).kinematics.compute.I_J_IBi, q, [], params);    % [3X10] body position and orientation Jacobian
-I_J_Ff = eval_jac(model.body( 7).kinematics.compute.I_J_IBi, q, [], params);	% [3X10] Front foot position and orientation Jacobian
-I_J_Hf = eval_jac(model.body( 4).kinematics.compute.I_J_IBi, q, [], params);	% [3x10] Hind foot position and orientation Jacobian
-I_J_EE = eval_jac(model.body(11).kinematics.compute.I_J_IBi, q, [], params);	% [3x10] Arm End-effector position and orientation Jacobian
-I_Jd_b  = eval_jac(model.body( 1).kinematics.compute.I_dJ_IBi, q, qd, params);  % [3X10] body position and orientation Jacobian derivative
-I_Jd_Ff = eval_jac(model.body( 7).kinematics.compute.I_dJ_IBi, q, qd, params);  % [3X10] Front foot position and orientation Jacobian derivative
-I_Jd_Hf = eval_jac(model.body( 4).kinematics.compute.I_dJ_IBi, q, qd, params);  % [3x10] Hind foot position and orientation Jacobian derivative
-I_Jd_EE = eval_jac(model.body(11).kinematics.compute.I_dJ_IBi, q, qd, params);  % [3x10] Arm End-effector position and orientation Jacobian derivative
+J_B  = eval_jac(model.body( 1).kinematics.compute.I_J_IBi, q, [], params);    % [3X10] body position and orientation Jacobian
+J_FF = eval_jac(model.body( 7).kinematics.compute.I_J_IBi, q, [], params);	% [3X10] Front foot position and orientation Jacobian
+J_HF = eval_jac(model.body( 4).kinematics.compute.I_J_IBi, q, [], params);	% [3x10] Hind foot position and orientation Jacobian
+J_EE = eval_jac(model.body(11).kinematics.compute.I_J_IBi, q, [], params);	% [3x10] Arm End-effector position and orientation Jacobian
+dJ_B  = eval_jac(model.body( 1).kinematics.compute.I_dJ_IBi, q, dq, params);  % [3X10] body position and orientation Jacobian derivative
+dJ_FF = eval_jac(model.body( 7).kinematics.compute.I_dJ_IBi, q, dq, params);  % [3X10] Front foot position and orientation Jacobian derivative
+dJ_HF = eval_jac(model.body( 4).kinematics.compute.I_dJ_IBi, q, dq, params);  % [3x10] Hind foot position and orientation Jacobian derivative
+dJ_EE = eval_jac(model.body(11).kinematics.compute.I_dJ_IBi, q, dq, params);  % [3x10] Arm End-effector position and orientation Jacobian derivative
 
-% Extract forward kinematics
+% Extract forward kinematics of the base
+p_B = q(1:3);
+w_B = dq(1:3);
+
+% Extract forward kinematics of the end-effector
 T_I_EE = model.body(11).kinematics.compute.T_IBi(q, [], [], params); % [4x4] Homogeneous transfrom from inertial to EE frame
-I_p_EE = [T_I_EE(1,4); T_I_EE(3,4); acos(T_I_EE(1,1))]; % [3x1] pose of the EE
-I_w_EE = I_J_EE(1:3,:)*qd; % [3x1] xz twist of the EE
+p_EE = [T_I_EE(1,4); T_I_EE(3,4); acos(T_I_EE(1,1))]; % [3x1] pose of the EE
+w_EE = J_EE(1:3,:)*dq; % [3x1] xz twist of the EE
 
 % Assemble constraint Jacobian -> Only constrain linear velocity at feet
-I_J_c = [I_J_Ff(1:2,:) ; I_J_Hf(1:2,:)];
-I_Jd_c = [I_Jd_Ff(1:2,:); I_Jd_Hf(1:2,:)];
+J_c = [J_FF(1:2,:) ; J_HF(1:2,:)];
+dJ_c = [dJ_FF(1:2,:); dJ_HF(1:2,:)];
 
-% Assemble constraint Jacobian -> Only constrain linear velocity at feet
-I_J_ee = I_J_EE(1:3,:);
-I_Jd_ee = I_Jd_EE(1:3,:);
+% Reduce end-effector Jacobian to only contain linear velocity terms
+J_EE = J_EE(1:3,:);
+dJ_EE = dJ_EE(1:3,:);
 
 %% Control References
 
 % Query the base trajectory planner
-[pd_b, wd_b] = base_motion_trajectory(model, t, x);
+[p_star_B, w_star_B] = base_motion_trajectory(model, t, x);
 
 % End-effector references
-pd_ee = [0.7 0.8 1.8].';
-wd_ee = zeros(3,1);
+p_star_EE = [0.7 0.8 1.8].';
+w_star_EE = zeros(3,1);
 
 %% Optimization Tasks
-% x_opt = [qdd', f_c', tau']
-kp_0 = 1;
-kd_0 = 2*sqrt(kp_0);
+% x_opt = [ddq', f_c_xz', tau']
 
 % Equations of motions
-A_eom = [M, -I_J_c, -S'];
-b_eom = [-b-g];
+A_eom = [];
+b_eom = [];
 
-% No foot contact motions
-A_c = [I_J_c, zeros(4, 4), zeros(4, 7)];
-b_c = [-I_Jd_c*qd];
+% No foot-contact motions
+A_c = [];
+b_c = [];
 
 % Body motion
-A_b = [I_J_b, zeros(3, 4), zeros(3, 7)];
-b_b = [kp_0*(pd_b-q(1:3))+kd_0*(wd_b-I_J_b*qd)-I_Jd_b*qd];
+A_b = [];
+b_b = [];
 
 % No end-effector motion
-A_ee = [I_J_ee, zeros(3, 4), zeros(3, 7)];
-b_ee = [kp_0*(pd_ee-I_p_EE)+kd_0*(wd_ee-I_w_EE)-I_Jd_ee*qd];
+A_ee = [];
+b_ee = [];
 
 %% Additional Tasks
 
 % Kinematic null space position control
 q0 = [0 0.50 0 0.9 -1.5 0.9 -1.5 0.9 0.7 0.4]'; % [10x1] Default generalized coordinates
-
+kp_0 = 1;
+kd_0 = 2*sqrt(kp_0);
 A_0 = [eye(10), zeros(10, 4), zeros(10, 7)];
-b_0 = kp_0*(q0 - q) - kd_0*qd;%dim=10
+b_0 = kp_0*(q0 - q) - kd_0*dq;%dim=10
 
 % Torque minimization
 A_tau = [zeros(7, 10), zeros(7, 4), eye(7)];
@@ -128,7 +131,7 @@ d = [d_tau_up; d_tau_low; d_f_c];
 % Solve hierarchical QPs
 print_solution = 0;
 x_opt = hopt(A, b, C, d, print_solution);
-qdd = x_opt(1:10);
+ddq = x_opt(1:10);
 f_c = x_opt(11:14);
 tau = x_opt(15:end);
 
