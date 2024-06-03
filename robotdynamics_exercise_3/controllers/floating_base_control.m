@@ -71,12 +71,12 @@ w_star_EE = zeros(3,1);
 % x_opt = [ddq', f_c_xz', tau']
 
 % Equations of motions
-A_eom = [];
-b_eom = [];
+A_eom = [M -J_FF -J_HF -J_EE -S'];
+b_eom = [-b -g];
 
 % No foot-contact motions
-A_c = [];
-b_c = [];
+A_c = [J_c,zeroes(4,8)];
+b_c = -[J_c,zeroes(4,8)]*dq;
 
 % Body motion
 A_b = [];
