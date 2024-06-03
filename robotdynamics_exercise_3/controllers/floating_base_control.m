@@ -68,11 +68,11 @@ p_star_EE = [0.7 0.8 1.8].';
 w_star_EE = zeros(3,1);
 
 %% Optimization Tasks
-% x_opt = [ddq', f_c_xz', tau']
+x_opt = [ddq', f_c_xz', tau']
 
 % Equations of motions
-A_eom = [M -J_FF -J_HF -J_EE -S'];
-b_eom = [-b -g];
+A_eom = [M ,-J_c', -S'];
+b_eom = [-b ,-g];
 
 % No foot-contact motions
 A_c = [J_c,zeroes(4,8)];
