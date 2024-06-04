@@ -68,7 +68,7 @@ p_star_EE = [0.7 0.8 1.8].';
 w_star_EE = zeros(3,1);
 
 %% Optimization Tasks
-%x_opt = [ddq', f_c_xz', tau']
+x_opt = [ddq', f_c_xz', tau']
 
 % Equations of motions
 A_eom = [M ,-J_c', -S'];
@@ -91,8 +91,8 @@ b_b = (base_re_acce-(dJ_B*dq));
 % No end-effector motion
 end_efec_ref_acce=(kp*(p_star_EE-p_EE)+(kd*(w_star_EE-w_EE)));
 
-A_ee = [J_EE,zeroes(3,11)];
-b_ee = [end_efec_ref_acce-(dJ_EE*dq)];
+A_ee = [J_EE];
+b_ee = [];
 
 %% Additional Tasks
 
