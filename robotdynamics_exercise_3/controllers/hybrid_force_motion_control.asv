@@ -87,12 +87,11 @@ function [ tau ] = hybrid_force_motion_control(model, t, x)
     
     % Constant EE position in z direction
     kp_ee=6;
-    kd_ee=2*sqrt(kp_ee);
+    kd_ee=2*sq
 
-    dw_star_EE = kp_ee*(p_star_EE_z - p_EE(2)) - kd_ee*w_EE(2);
-    A_pos_ee = [J_EE(2,:), zeros(1, 4), zeros(1, 7), zeros(1,3)];
-    b_pos_ee = dw_star_EE -dJ_EE(2,:)*dq;%dim=1
 
+    
+    
     % EE wrench 
     A_force_ee = [zeros(3,21),eye(3)];
     b_force_ee = f_star_EE;
