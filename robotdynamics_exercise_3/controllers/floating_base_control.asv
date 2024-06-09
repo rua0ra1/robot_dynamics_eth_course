@@ -68,7 +68,7 @@ p_star_EE = [0.7 0.8 1.8].';
 w_star_EE = zeros(3,1);
 
 %% Optimization Tasks
-x_opt = [ddq', f_c_xz', tau']
+%x_opt = [ddq', f_c_xz', tau']
 
 % Equations of motions
 A_eom = [M ,-J_c', -S'];
@@ -79,20 +79,20 @@ A_c = [J_c,zeroes(4,11)];
 b_c = -dJ_c*dq;
 
 % Body motion
-kp=3;
-kd=1;
+kp=[0,3,0];
+kd=[0,1,0];
 
 %required acceleration of the B
-base_ref_acce=(kp*(p_star_B-p_B))+(kd*(w_star_B-w_B));
+base_ref_acce_z=(kp*(p_star_B-p_B))+(kd*(w_star_B-w_B));
 
 A_b = [J_B,zeroes(3,11)];
-b_b = (base_re_acce-(dJ_B*dq));
+b_b = (base_ref_acce-(dJ_B*dq));
 
 % No end-effector motion
 end_efec_ref_acce=(kp*(p_star_EE-p_EE)+(kd*(w_star_EE-w_EE)));
 
-A_ee = [J_EE];
-b_ee = [];
+A_ee = [J_EE,zeroes(3,11)];
+b_ee = end_efec_ref_acce-(dJ_EE*dq);
 
 %% Additional Tasks
 

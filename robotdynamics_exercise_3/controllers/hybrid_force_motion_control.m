@@ -73,24 +73,36 @@ function [ tau ] = hybrid_force_motion_control(model, t, x)
     % x_opt = [ddq', f_c_xz', tau', f_EE']
     
     % Equations of motions
-    A_eom = [];
-    b_eom = [];
+    A_eom = [M ,-J_c', -S',-J_EE'];            
+    b_eom = [-b ,-g];
     
     % No foot-contact motions
-    A_c = [];
-    b_c = [];
+    A_c = [J_c,zeroes(4,14)];
+    b_c = -dJ_c*dq;
     
     % Constant EE position in z direction
-    A_pos_ee = [];
-    b_pos_ee = [];
+    kp=[0;3;0];
+    kd=[0;1;0];
+    p_star_EE = [0, p_star_EE_z,0].';
+    w_star_EE = zeros(3,1);
+    end_eff_ref_acce=(kp*(p_star_EE-p_EE))+(kd*(w_star_EE-w_EE));
+
+    A_pos_ee = [J_EE,zeroes(3,14)];
+    b_pos_ee = end_eff_ref_acce-(dJ_EE*dq);
     
     % EE wrench 
-    A_force_ee = [];
-    b_force_ee = [];
+    A_force_ee = [zeros(1,21),1,1,1];
+    b_force_ee = f_star_EE;
     
     % Body motion
-    A_b = [];
-    b_b = [];
+    kp=3;
+    kd=1;
+
+    %required acceleration of the B
+    base_ref_acce=(kp*(p_star_B-p_B))+(kd*(w_star_B-w_B));
+
+    A_b = [J_B,zeroes(3,14)];
+    b_b = (base_ref_acce-(dJ_B*dq));
     
     %% Additional Tasks
     

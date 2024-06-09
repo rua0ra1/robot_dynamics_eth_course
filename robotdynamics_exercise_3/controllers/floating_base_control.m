@@ -86,13 +86,13 @@ kd=1;
 base_ref_acce=(kp*(p_star_B-p_B))+(kd*(w_star_B-w_B));
 
 A_b = [J_B,zeroes(3,11)];
-b_b = (base_re_acce-(dJ_B*dq));
+b_b = (base_ref_acce-(dJ_B*dq));
 
 % No end-effector motion
 end_efec_ref_acce=(kp*(p_star_EE-p_EE)+(kd*(w_star_EE-w_EE)));
 
 A_ee = [J_EE,zeroes(3,11)];
-b_ee = [end_efec_ref_acce-(dJ_EE*dq)];
+b_ee = end_efec_ref_acce-(dJ_EE*dq);
 
 %% Additional Tasks
 
