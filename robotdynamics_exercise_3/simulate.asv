@@ -45,8 +45,8 @@ dx = 0.8;
 %controller = @jointspace_pid_control;
 %controller = @floating_base_control;
 %controller = @floating_base_control_solution;
-controller = @hybrid_force_motion_control;
-%controller = @hybrid_force_motion_control_solution;
+% controller = @hybrid_force_motion_control;
+% controller = @hybrid_force_motion_control_solution;
 
 % Control frequency (Hz)
 ctrlfreq = 400;

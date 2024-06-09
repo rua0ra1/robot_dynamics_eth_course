@@ -72,27 +72,40 @@ w_star_EE = zeros(3,1);
 
 % Equations of motions
 A_eom = [M ,-J_c', -S'];
-b_eom = [-b ,-g];
+b_eom =-b-g;
+
+disp(size(A_eom))
+disp(size(b_eom))
+
 
 % No foot-contact motions
-A_c = [J_c,zeroes(4,11)];
+A_c = [J_c,zeros(4,11)];
 b_c = -dJ_c*dq;
 
+% disp(size(A_c))
+% disp(size(b_c))
+
 % Body motion
-kp=3;
-kd=1;
+kp=10;
+kd=3;
 
 %required acceleration of the B
 base_ref_acce=(kp*(p_star_B-p_B))+(kd*(w_star_B-w_B));
 
-A_b = [J_B,zeroes(3,11)];
+A_b = [J_B,zeros(3,11)];
 b_b = (base_ref_acce-(dJ_B*dq));
+
+% disp(size(A_b))
+% disp(size(b_b))
 
 % No end-effector motion
 end_efec_ref_acce=(kp*(p_star_EE-p_EE)+(kd*(w_star_EE-w_EE)));
 
-A_ee = [J_EE,zeroes(3,11)];
+A_ee = [J_EE,zeros(3,11)];
 b_ee = end_efec_ref_acce-(dJ_EE*dq);
+
+% disp(size(A_ee))
+% disp(size(b_ee))
 
 %% Additional Tasks
 
