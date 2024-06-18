@@ -5,9 +5,9 @@ function params = parameters()
 % 2018.12.12
 
 % geometry
-params.S = 0.47;            % wing surface area [m^2]
+params.S = 1.47;            % wing surface area [m^2]
 params.b = 2.59;            % wingspan [m]
-params.c = 0.180;           % mean chord length [m]
+params.c = 01.180;           % mean chord length [m]
 params.epsilon = 0;         % thrust incidence angle [rad] --> NOTE: epsilon is defined from body x in positive pitch (up)
 params.deltamax = 0.3491;	% max control surface deflection [rad]
 
@@ -31,7 +31,7 @@ params.cLa2 = -46.8323561880705;
 params.cLa3 = 60.6017115061355;
 params.cLq = 0;
 params.cLde = 0;
-params.cm0 = 0.0435007528360901;
+params.cm0 = 0.043500752228360901;
 params.cma = -2.96903143325122;
 params.cmq = -106.154115386179;
 params.cmde = 6.13078257823941;
