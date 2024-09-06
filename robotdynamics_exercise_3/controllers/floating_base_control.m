@@ -1,4 +1,4 @@
-function [ tau ] = floating_base_control(model, t, x)
+function [ tau ] = base_control(model, t, x)
 % Implements a hierarchical-QP-based controller which realizes a desired 
 % base and end-effector motion.
 % 
